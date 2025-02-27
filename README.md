@@ -1,15 +1,15 @@
 # Project Roadmap
 
 ## ✅ Completed
+- [x] Implement Connect and Help tabs
 - [x] Started interface structure
-- [x] Implement Connect and Help tab
 
 ## 🚧 In Progress
+- [ ] Add copy btns to socials
 - [ ] Implement API authentication
-- [ ] Develop front-end UI
+- [ ] Submit btn functionality
 
 ## ⏳ Planned
-- [ ] Add copy btns to socials
-- [ ] API Authentication
-- [ ] Optimize for performance
 - [ ] Create database schema
+- [ ] Finalize intro interface
+- [ ] Optimize for performance
