@@ -28,6 +28,11 @@ help_tab = tabview.add("Help")
 # Functions
 def submit_api():
     print("btn triggered")
+    connect_status.configure(text="AUTHENTICATING", text_color="#FFFF00")
+    connect_status.update()
+    connect_entry.configure(state="disabled", fg_color="gray")
+    api_submit_btn.configure(state="disabled")
+    # connect_status.configure(state="disabled")
 
 # /////////// /////////// /////////// /////////// /////////// 
 # Connect Tab Entries
