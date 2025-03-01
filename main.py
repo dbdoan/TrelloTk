@@ -1,7 +1,9 @@
 # Imports
 import os
 import customtkinter as ck
+import json
 import pyperclip
+import requests
 import sqlite3
 
 import tkinter as tk
@@ -9,6 +11,13 @@ from tkinter import ttk
 
 # Clear console for development
 os.system("cls" if os.name == 'nt' else 'clear')
+
+with open("config.json", "r") as f:
+    config = json.load(f)
+
+TEST_API_KEY = config["API_KEY"]
+TEST_TOKEN = config["TOKEN"]
+TEST_BOARD_ID = config["BOARD_ID"]
 
 # /////////// /////////// /////////// /////////// /////////// 
 # Starter
@@ -19,7 +28,7 @@ frm = ttk.Frame(root, padding=10)
 root.grid_columnconfigure(0, weight=1)
 root.grid_rowconfigure(0, weight=1)
 
-tabview = ck.CTkTabview(master=root, width=500, height=200)
+tabview = ck.CTkTabview(master=root, width=500, height=250)
 tabview.grid(row=0, column=0, padx=0, pady=0)
 
 help_holder = "Help"
@@ -29,29 +38,48 @@ help_tab = tabview.add(f"{help_holder}")
 
 
 # /////////// /////////// /////////// /////////// /////////// 
-# Fucntions
+# Functions
 
 # Copy
 def copy_to_clipboard(text, button):
     try:
         pyperclip.copy(text)
-        button.configure(state="disabled", text="copied", fg_color="#FFFF00", text_color="black")
+        button.configure(state="disabled", text="copied", fg_color="#FFFF00", text_color="red")
+        print(button.get('text_color'))
         button.after(8000, lambda: button.configure(state="enabled", fg_color="#1F6AA5", text="copy"))
     except:
         button.configure(text="error", fg_color="red", text_color="black")
         button.after(8000, lambda: button.configure(state="enabled", fg_color="#1F6AA5", text="copy"))
 
+def get_trello_response(API_KEY, TOKEN):
+    url = f"https://api.trello.com/1/boards/{BOARD_ID}/actions"
+    query = {
+        'key': API_KEY,
+        'token': TOKEN
+    }
+    
+    response = requests.get(
+        url, 
+        params=query
+    )
+    
+    print(response.status_code)
+    
 # API
 def submit_api():
-    print("btn triggered")
-    if len(connect_entry.get()) < 1 or len(connect_entry.get()) != 32:
-        connect_entry.delete(0, "end")
-        connect_entry.configure(placeholder_text="Please enter a valid API_KEY")
-    else:
-        connect_status.configure(text="AUTHENTICATING", text_color="#FFFF00")
-        connect_status.update()
-        connect_entry.configure(state="disabled", fg_color="gray")
-        api_submit_btn.configure(state="disabled")
+    print("btn triggered.")
+    user_api_key = api_key_input.get()
+    user_token = token_input.get()
+    # print(user_api_key, user_token)
+#     if len(connect_entry.get()) < 1 or len(connect_entry.get()) != 32:
+#         connect_entry.delete(0, "end")
+#         connect_entry.configure(placeholder_text="Please enter a valid API_KEY!")
+#     # else:
+#         connect_status.configure(text="AUTHENTICATING", text_color="#FFFF00")
+#         connect_status.update()
+#         if get_trello_response(API_KEY, TOKEN)
+#         connect_entry.configure(state="disabled", fg_color="gray")
+#         api_submit_btn.configure(state="disabled")
 
 # /////////// /////////// /////////// /////////// /////////// 
 # Connect Tab
@@ -65,17 +93,22 @@ tabview.tab("Connect").grid_rowconfigure(0, weight=1)
 tabview.tab("Connect").grid_rowconfigure(4, weight=1)
 
 status_label = ck.CTkLabel(master=tabview.tab("Connect"), text="STATUS: ", font=("Arial", 14, "bold"))
-connect_status = ck.CTkLabel(master=tabview.tab("Connect"), text="AWAITING KEY", text_color="red")
+connect_status = ck.CTkLabel(master=tabview.tab("Connect"), text="AWAITING KEY", font=("Arial", 12, "bold"), text_color="red")
 status_label.grid(row=1, column=0, sticky="e", pady=10)
 connect_status.grid(row=1, column=1, sticky="w")
 
 api_key_label = ck.CTkLabel(master=tabview.tab("Connect"), text="API_KEY: ", font=("Arial", 14, "bold"))
-connect_entry = ck.CTkEntry(master=tabview.tab("Connect"), placeholder_text="Enter API Key", width=275, fg_color="gray")
+api_key_input = ck.CTkEntry(master=tabview.tab("Connect"), placeholder_text="[enter api key]", width=275, fg_color="gray", placeholder_text_color="#A8A8A8")
 api_key_label.grid(row=2, column=0, sticky="e")
-connect_entry.grid(row=2, column=1, sticky="w")
+api_key_input.grid(row=2, column=1, sticky="w")
+
+token_label = ck.CTkLabel(master=tabview.tab("Connect"), text="TOKEN: ", font=("Arial", 14, "bold"))
+token_input = ck.CTkEntry(master=tabview.tab("Connect"), placeholder_text="[enter token]", width=275, fg_color="gray", placeholder_text_color="#A8A8A8")
+token_label.grid(row=3, column=0, sticky="e")
+token_input.grid(row=3, column=1, sticky="w", pady=5)
 
 api_submit_btn = ck.CTkButton(master=tabview.tab("Connect"), text="Submit", width=275, command=submit_api)
-api_submit_btn.grid(row=3, column=1, sticky="w", pady=10)
+api_submit_btn.grid(row=4, column=1, sticky="w", pady=10)
 
 # /////////// /////////// /////////// /////////// /////////// 
 # Help Tab
@@ -101,12 +134,12 @@ developer_github = ck.CTkEntry(master=tabview.tab(f"{help_holder}"), placeholder
 developer_github.configure(state="disabled")
 developer_github.grid(row=3, column=1, padx=0, pady=5, sticky="w")
 
-copy_paste_btn_lnkin = ck.CTkButton(master=tabview.tab(f"{help_holder}"), text="copy", width=50, font=("Arial", 14), hover_color="#a5a5a5", text_color="black", command=lambda: copy_to_clipboard("linkedin.com/in/dbdoan", copy_paste_btn_lnkin))
+copy_paste_btn_lnkin = ck.CTkButton(master=tabview.tab(f"{help_holder}"), text="copy", width=50, font=("Arial", 14), hover_color="#A5A5A5", text_color="white", command=lambda: copy_to_clipboard("linkedin.com/in/dbdoan", copy_paste_btn_lnkin))
 copy_paste_btn_lnkin.grid(row=2, column=2, padx=5, sticky="w")
-copy_paste_btn_gh = ck.CTkButton(master=tabview.tab(f"{help_holder}"), text="copy", width=50, font=("Arial", 14), hover_color="#a5a5a5", text_color="black", command=lambda: copy_to_clipboard("github.com/dbdoan", copy_paste_btn_gh))
+copy_paste_btn_gh = ck.CTkButton(master=tabview.tab(f"{help_holder}"), text="copy", width=50, font=("Arial", 14), hover_color="#A5A5A5", text_color="white", command=lambda: copy_to_clipboard("github.com/dbdoan", copy_paste_btn_gh))
 copy_paste_btn_gh.grid(row=3, column=2, padx=5, sticky="w")
 
 # /////////// /////////// /////////// /////////// /////////// 
 # Root End
-root.geometry("600x250")
+root.geometry("600x300")
 root.mainloop()
