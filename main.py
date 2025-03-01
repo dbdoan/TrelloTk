@@ -2,7 +2,6 @@
 import os
 import customtkinter as ck
 import json
-import pyperclip
 import requests
 import sqlite3
 import time
@@ -59,16 +58,24 @@ clear_img = ck.CTkImage(light_image=Image.open("img/clear.png"), size=(15, 20))
 
 # Copy
 def copy_to_clipboard(text, button):
-    pyperclip.copy(text)
-    button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
-    button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
+    try:
+        root.clipboard_clear
+        root.clipboard_append(text)
+        button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
+        button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
+    except tk.TclError as e:
+        print(f"Error: {e}")
         
 # Paste
 def paste_to_clipboard(entry_field, button):
-    entry_field.delete(0, "end")
-    entry_field.insert(0, pyperclip.paste())
-    button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
-    button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
+    try:
+        entry_field.delete(0, "end")
+        entry_field.insert(0, root.clipboard_get())
+        button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
+        button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
+    except tk.TclError as e:
+        print(f"Error: {e}")
+        
     
 def clear_clipboard(entry_field, button):
     entry_field.delete(0, "end")
