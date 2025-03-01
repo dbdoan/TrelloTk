@@ -24,6 +24,15 @@ TEST_TOKEN = config["TOKEN"]
 TEST_BOARD_ID = config["BOARD_ID"]
 
 # /////////// /////////// /////////// /////////// /////////// 
+# COLORS
+FIELD_ON = "#8D8D8D"
+FIELD_OFF= "#636363"
+DEFAULT_BLUE = "#1F6AA5"
+SUCCESS_GREEN = "#39FF14"
+COPY_PASTA_YELLOW = "#FFFF85"
+AUTHENTICATING_YELLOW = "#FFFF00"
+
+# /////////// /////////// /////////// /////////// /////////// 
 # STARTER
 root = tk.Tk()
 root.title("TkTrello")
@@ -43,6 +52,7 @@ help_tab = tabview.add(f"{help_holder}")
 # Images
 copy_img = ck.CTkImage(light_image=Image.open("img/copy.png"), size=(15, 20))
 paste_img = ck.CTkImage(light_image=Image.open("img/paste.png"), size=(15, 20))
+clear_img = ck.CTkImage(light_image=Image.open("img/clear.png"), size=(15, 20))
 
 # /////////// /////////// /////////// /////////// /////////// 
 # FUNCTIONS
@@ -50,15 +60,20 @@ paste_img = ck.CTkImage(light_image=Image.open("img/paste.png"), size=(15, 20))
 # Copy
 def copy_to_clipboard(text, button):
     pyperclip.copy(text)
-    button.configure(state="disabled", fg_color="#FFFF00")
-    button.after(8000, lambda: button.configure(state="normal", fg_color="#1F6AA5"))
+    button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
+    button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
         
 # Paste
 def paste_to_clipboard(entry_field, button):
     entry_field.delete(0, "end")
     entry_field.insert(0, pyperclip.paste())
-    button.configure(state="disabled", fg_color="#FFFF00")
-    button.after(8000, lambda: button.configure(state="normal", fg_color="#1F6AA5"))
+    button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
+    button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
+    
+def clear_clipboard(entry_field, button):
+    entry_field.delete(0, "end")
+    button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
+    button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))  
 
 # Authentication
 def key_token_validation(API_KEY, TOKEN):
@@ -82,30 +97,25 @@ def submit_api():
     user_token = api_token_input.get()
     
     time.sleep(.3)
-    connect_status.configure(text="AUTHENTICATING", text_color="#FFFF00")
+    connect_status.configure(text="AUTHENTICATING", text_color=AUTHENTICATING_YELLOW)
+    api_key_input.configure(state="disabled", fg_color=FIELD_OFF)
+    api_token_input.configure(state="disabled", fg_color=FIELD_OFF)
     connect_status.update()
-    api_key_input.configure(state="disabled", fg_color="gray")
-    api_token_input.configure(state="disabled", fg_color="gray")
+    api_key_input.update()
+    api_token_input.update()
     api_submit_btn.configure(state="disabled")
     
-    if len(api_key_input.get()) < 1:
-        api_key_input.delete(0, "end")
-        api_key_input.configure(placeholder_text="oops, it seems you left this field empty!")
-    elif len(api_token_input.get()) < 1:
-        api_token_input.delete(0, "end")
-        api_token_input.configure(placeholder_text="oops, it seems you left this field empty!")
+    if key_token_validation(user_api_key, user_token) == 200:
+        time.sleep(1)
+        connect_status.configure(text="VALID", text_color=SUCCESS_GREEN)
+        connect_status.update()
     else:
-        if key_token_validation(user_api_key, user_token) == 200:
-            time.sleep(1)
-            connect_status.configure(text="VALID", text_color="#39FF14")
-            connect_status.update()
-        else:
-            time.sleep(1)
-            connect_status.configure(text="INVALID; RECHECK KEY OR TOKEN.", text_color="red")
-            connect_status.update()
-            api_key_input.configure(state="normal")
-            api_token_input.configure(state="normal")
-            api_submit_btn.configure(state="normal")
+        time.sleep(1)
+        connect_status.configure(text="INVALID; RECHECK KEY OR TOKEN.", text_color="red")
+        connect_status.update()
+        api_key_input.configure(state="normal", fg_color=FIELD_ON)
+        api_token_input.configure(state="normal", fg_color=FIELD_ON)
+        api_submit_btn.configure(state="normal")
 
 # /////////// /////////// /////////// /////////// /////////// 
 # CONNECT TAB
@@ -124,12 +134,12 @@ status_label.grid(row=1, column=0, sticky="e", pady=10)
 connect_status.grid(row=1, column=1, sticky="w")
 
 api_key_label = ck.CTkLabel(master=tabview.tab("Connect"), text="API_KEY: ", font=("Arial", 14, "bold"))
-api_key_input = ck.CTkEntry(master=tabview.tab("Connect"), placeholder_text="[paste api key]", width=275, fg_color="gray", placeholder_text_color="#A8A8A8")
+api_key_input = ck.CTkEntry(master=tabview.tab("Connect"), placeholder_text="[paste api key]", width=275, fg_color=FIELD_ON, placeholder_text_color="#5D5D5D")
 api_key_label.grid(row=2, column=0, sticky="e")
 api_key_input.grid(row=2, column=1, sticky="w")
 
 token_label = ck.CTkLabel(master=tabview.tab("Connect"), text="TOKEN: ", font=("Arial", 14, "bold"))
-api_token_input = ck.CTkEntry(master=tabview.tab("Connect"), placeholder_text="[paste token]", width=275, fg_color="gray", placeholder_text_color="#A8A8A8")
+api_token_input = ck.CTkEntry(master=tabview.tab("Connect"), placeholder_text="[paste token]", width=275, fg_color=FIELD_ON, placeholder_text_color="#5D5D5D")
 token_label.grid(row=3, column=0, sticky="e")
 api_token_input.grid(row=3, column=1, sticky="w", pady=5)
 
@@ -139,8 +149,14 @@ api_submit_btn.grid(row=4, column=1, sticky="w", pady=10)
 paste_btn_apikey = ck.CTkButton(master=tabview.tab("Connect"), width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(api_key_input, paste_btn_apikey), image=paste_img)
 paste_btn_apikey.grid(row=2, column=2, padx=5, sticky="w")
 
+clear_btn_apikey = ck.CTkButton(master=tabview.tab("Connect"), width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: clear_clipboard(api_key_input, clear_btn_apikey), image=clear_img)
+clear_btn_apikey.grid(row=2, column=3, padx=0, sticky="w")
+
 paste_btn_token = ck.CTkButton(master=tabview.tab("Connect"), width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(api_token_input, paste_btn_token), image=paste_img)
 paste_btn_token.grid(row=3, column=2, padx=5, sticky="w")
+
+clear_btn_token = ck.CTkButton(master=tabview.tab("Connect"), width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: clear_clipboard(api_token_input, clear_btn_token), image=clear_img)
+clear_btn_token.grid(row=3, column=3, padx=0, sticky="w")
 
 # /////////// /////////// /////////// /////////// /////////// 
 # HELP TAB
