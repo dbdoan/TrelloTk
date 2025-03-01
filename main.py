@@ -14,7 +14,7 @@ from PIL import Image
 os.system("cls" if os.name == 'nt' else 'clear')
 
 # /////////// /////////// /////////// /////////// /////////// 
-# KEYS
+# TEST KEYS
 with open("config.json", "r") as f:
     config = json.load(f)
 
@@ -64,7 +64,7 @@ def copy_to_clipboard(text, button):
         button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
         button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
     except tk.TclError as e:
-        print(f"Error: {e}")
+        print(f"Clipboard copy error: {e}")
         
 # Paste
 def paste_to_clipboard(entry_field, button):
@@ -74,7 +74,7 @@ def paste_to_clipboard(entry_field, button):
         button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
         button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
     except tk.TclError as e:
-        print(f"Error: {e}")
+        print(f"Clipboard paste error: ", e)
         
     
 def clear_clipboard(entry_field, button):
@@ -84,18 +84,21 @@ def clear_clipboard(entry_field, button):
 
 # Authentication
 def key_token_validation(API_KEY, TOKEN):
-    url = f"https://api.trello.com/1/members/me/boards?key={API_KEY}&token={TOKEN}"
-    query = {
-        'key': API_KEY,
-        'token': TOKEN
-    }
-    
-    response = requests.get(
-        url, 
-        params=query
-    )
-    
-    return response.status_code
+    try:
+        url = f"https://api.trello.com/1/members/me/boards?key={API_KEY}&token={TOKEN}"
+        query = {
+            'key': API_KEY,
+            'token': TOKEN
+        }
+        
+        response = requests.get(
+            url, 
+            params=query
+        )
+        print(json.dumps(response.json(), indent=4))
+        return response.status_code
+    except Exception as e:
+        print("Validation error: ", e)
     
 # API
 def submit_api():
@@ -116,6 +119,8 @@ def submit_api():
         time.sleep(1)
         connect_status.configure(text="VALID", text_color=SUCCESS_GREEN)
         connect_status.update()
+        root.withdraw()
+        main_program()
     else:
         time.sleep(1)
         connect_status.configure(text="INVALID; RECHECK KEY OR TOKEN.", text_color="red")
@@ -123,6 +128,11 @@ def submit_api():
         api_key_input.configure(state="normal", fg_color=FIELD_ON)
         api_token_input.configure(state="normal", fg_color=FIELD_ON)
         api_submit_btn.configure(state="normal")
+
+# /////////// /////////// /////////// /////////// /////////// 
+# MAIN PROGRAM (TOP_LEVEL)
+def main_program():
+    toplevel = ck.CTkToplevel(root)
 
 # /////////// /////////// /////////// /////////// /////////// 
 # CONNECT TAB
