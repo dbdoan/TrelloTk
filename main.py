@@ -84,6 +84,7 @@ def submit_api():
     # print("btn triggered.")
     user_api_key = api_key_input.get()
     user_token = api_token_input.get()
+    username = username_input.get()
     
     time.sleep(.3)
     connect_status.configure(text="AUTHENTICATING", text_color=AUTHENTICATING_YELLOW)
@@ -101,12 +102,12 @@ def submit_api():
         
         con = sqlite3.connect("key.db")
         cursor = con.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS credentials(api_key, token)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS credentials(user_name, api_key, token)")
         con.commit()
         
-        cursor.execute(f"INSERT OR IGNORE INTO credentials (api_key, token) VALUES (?, ?)", (user_api_key, user_token))
+        cursor.execute(f"INSERT OR IGNORE INTO credentials (user_name, api_key, token) VALUES (?, ?, ?)", (username, user_api_key, user_token))
         
-        cursor.execute("SELECT api_key FROM credentials")
+        cursor.execute("SELECT user_name FROM credentials")
         api_keys = cursor.fetchall()
         
         for api_keys in api_keys:
@@ -133,7 +134,7 @@ def validateKeyExists():
     cursor.execute("SELECT name FROM sqlite_master where type='table' AND name='credentials'")
     table_exists = cursor.fetchone()
     if not table_exists:
-        cursor.execute("CREATE TABLE credentials (api_key TEXT, token TEXT)")
+        cursor.execute("CREATE TABLE credentials (username TEXT unique, api_key TEXT unique, token TEXT) unique")
         con.commit()
         return False
     
@@ -156,7 +157,7 @@ def initialize_login_gui():
     clear_img = ck.CTkImage(light_image=Image.open("img/clear.png"), size=(15, 20))
 
     global root, tabview, help_holder
-    global connect_status, api_key_input, api_token_input, api_submit_btn
+    global connect_status, api_key_input, api_token_input, api_submit_btn, username_input
     
     root = tk.Tk()
     root.title("TkTrello")
@@ -197,9 +198,14 @@ def initialize_login_gui():
     api_token_input = ck.CTkEntry(master=connect_tab, placeholder_text="[paste token]", width=275, fg_color=FIELD_ON, placeholder_text_color="#5D5D5D")
     token_label.grid(row=3, column=0, sticky="e")
     api_token_input.grid(row=3, column=1, sticky="w", pady=5)
+    
+    username_label = ck.CTkLabel(master=connect_tab, text="USER: ", font=("Arial", 14, "bold"))
+    username_input = ck.CTkEntry(master=connect_tab, placeholder_text="[enter name for entry]", width=275, fg_color=FIELD_ON, placeholder_text_color="#5D5D5D")
+    username_label.grid(row=4, column=0, sticky="e")
+    username_input.grid(row=4, column=1, sticky="w")
 
     api_submit_btn = ck.CTkButton(master=connect_tab, text="Connect", width=275, command=submit_api)
-    api_submit_btn.grid(row=4, column=1, sticky="w", pady=10)
+    api_submit_btn.grid(row=5, column=1, sticky="w", pady=10)
 
     paste_btn_apikey = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(api_key_input, paste_btn_apikey), image=paste_img)
     paste_btn_apikey.grid(row=2, column=2, padx=5, sticky="w")
@@ -212,8 +218,7 @@ def initialize_login_gui():
 
     clear_btn_token = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: clear_clipboard(api_token_input, clear_btn_token), image=clear_img)
     clear_btn_token.grid(row=3, column=3, padx=0, sticky="w")
-
-    # /////////// /////////// /////////// /////////// /////////// 
+    
     # HELP TAB
     # Centers the entry boxes in help tab]
     help_tab.grid_columnconfigure(0, weight=1)
@@ -241,10 +246,32 @@ def initialize_login_gui():
     copy_btn_gh = ck.CTkButton(master=help_tab, width=20, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: copy_to_clipboard("github.com/dbdoan", copy_btn_gh), image=copy_img)
     copy_btn_gh.grid(row=3, column=2, padx=5, sticky="w")
 
-        
+def initialize_toplevel_gui():
+    global tabview_toplevel
+    toplevel = ck.CTkToplevel(root)
+    toplevel.title("TkTrello - TempAdmin")
+
+    # Centering frame in respects to window
+    toplevel.grid_columnconfigure(0, weight=1)
+    toplevel.grid_rowconfigure(0, weight=1)
+    
+    tabview_toplevel = ck.CTkTabview(master=toplevel, width=500, height=250)
+    tabview_toplevel.grid(row=0, column=0, padx=0, pady=0)
+    
+    main_tab = tabview_toplevel.add("Main")
+    settings_tab = tabview_toplevel.add("Settings")
+    
+    main_tab.grid_columnconfigure(0, weight=1)
+    main_tab.grid_columnconfigure(1, weight=1)
+
+    main_tab.grid_rowconfigure(0, weight=1)
+    main_tab.grid_rowconfigure(1, weight=1)
+    
+    toplevel.geometry("600x300")
+
 # MAIN PROGRAM (TOP_LEVEL)
 def main_program():
-    toplevel = ck.CTkToplevel(root)
+    initialize_toplevel_gui()
     
 # /////////// /////////// /////////// /////////// /////////// 
 # LOGIN START
