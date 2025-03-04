@@ -10,7 +10,7 @@
 
 ## 🚧 In Progress
 - [ ] Successful API Authentication post-procedure [hide main level, pop top-level]
-- [ ] Trello Viewer implementation
+- [ ] Create database schema
 
 ## ⏳ Planned
-- [ ] Create database schema
+- [ ] Trello implementation

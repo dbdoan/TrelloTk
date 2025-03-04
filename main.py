@@ -32,21 +32,59 @@ COPY_PASTA_YELLOW = "#FFFF85"
 AUTHENTICATING_YELLOW = "#FFFF00"
 
 # /////////// /////////// /////////// /////////// /////////// 
+# MAIN PROGRAM (TOP_LEVEL)
+def main_program():
+    toplevel = ck.CTkToplevel(root)
+    
+# /////////// /////////// /////////// /////////// /////////// 
 # STARTER
-root = tk.Tk()
-root.title("TkTrello")
-frm = ttk.Frame(root, padding=10)
+def validateKeyExists():
+    con = sqlite3.connect("key.db")
+    cursor = con.cursor()
+    
+    cursor.execute("SELECT 1 FROM credentials LIMIT 1")
+    result = cursor.fetchone()
+    
+    if result:
+        return True
+    else:
+        return False
+    
+if validateKeyExists():
+    root = tk.Tk()
+    root.title("TkTrello")
+    frm = ttk.Frame(root, padding=10)
 
-root.grid_columnconfigure(0, weight=1)
-root.grid_rowconfigure(0, weight=1)
+    root.grid_columnconfigure(0, weight=1)
+    root.grid_rowconfigure(0, weight=1)
 
-tabview = ck.CTkTabview(master=root, width=500, height=250)
-tabview.grid(row=0, column=0, padx=0, pady=0)
+    tabview = ck.CTkTabview(master=root, width=500, height=250)
+    tabview.grid(row=0, column=0, padx=0, pady=0)
 
-help_holder = "Help"
-# Tabs
-connect_tab = tabview.add("Connect")
-help_tab = tabview.add(f"{help_holder}")
+    help_holder = "Help"
+    # Tabs
+    connect_tab = tabview.add("Connect")
+    help_tab = tabview.add(f"{help_holder}")
+    
+    root.withdraw()
+    main_program()
+    
+else:
+    
+    root = tk.Tk()
+    root.title("TkTrello")
+    frm = ttk.Frame(root, padding=10)
+
+    root.grid_columnconfigure(0, weight=1)
+    root.grid_rowconfigure(0, weight=1)
+
+    tabview = ck.CTkTabview(master=root, width=500, height=250)
+    tabview.grid(row=0, column=0, padx=0, pady=0)
+
+    help_holder = "Help"
+    # Tabs
+    connect_tab = tabview.add("Connect")
+    help_tab = tabview.add(f"{help_holder}")
 
 # Images
 copy_img = ck.CTkImage(light_image=Image.open("img/copy.png"), size=(15, 20))
@@ -119,6 +157,23 @@ def submit_api():
         time.sleep(1)
         connect_status.configure(text="VALID", text_color=SUCCESS_GREEN)
         connect_status.update()
+        
+        con = sqlite3.connect("key.db")
+        cursor = con.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS credentials(api_key, token)")
+        con.commit()
+        
+        cursor.execute(f"INSERT OR IGNORE INTO credentials (api_key, token) VALUES (?, ?)", (user_api_key, user_token))
+        
+        cursor.execute("SELECT api_key FROM credentials")
+        api_keys = cursor.fetchall()
+        
+        for api_keys in api_keys:
+            print(api_keys[0])
+        
+        con.commit()
+        con.close()
+        
         root.withdraw()
         main_program()
     else:
@@ -128,11 +183,6 @@ def submit_api():
         api_key_input.configure(state="normal", fg_color=FIELD_ON)
         api_token_input.configure(state="normal", fg_color=FIELD_ON)
         api_submit_btn.configure(state="normal")
-
-# /////////// /////////// /////////// /////////// /////////// 
-# MAIN PROGRAM (TOP_LEVEL)
-def main_program():
-    toplevel = ck.CTkToplevel(root)
 
 # /////////// /////////// /////////// /////////// /////////// 
 # CONNECT TAB
