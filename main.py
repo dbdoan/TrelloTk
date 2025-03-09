@@ -261,9 +261,25 @@ def initialize_toplevel_gui():
     main_tab = tabview_toplevel.add("Main")
     settings_tab = tabview_toplevel.add("Settings")
     
+    # Settings Tab centering
+    settings_tab.grid_columnconfigure(0, weight=1)
+    settings_tab.grid_columnconfigure(1, weight=0)
+    settings_tab.grid_columnconfigure(1, weight=0)
+    settings_tab.grid_columnconfigure(2, weight=0)
+    settings_tab.grid_columnconfigure(3, weight=1)
+    settings_tab.grid_rowconfigure(0, weight=1)
+    settings_tab.grid_rowconfigure(3, weight=1)
+    
+    
+    api_user_label  = ck.CTkLabel(master=settings_tab,text="api key: ",font=("Arial", 14, "bold"))
+    api_user_label.grid(row=1, column=0, sticky="e", pady=10)
+    api_key_display = ck.CTkEntry(master=settings_tab, placeholder_text="[api_key_here]", width=275, height=100, fg_color=FIELD_OFF, placeholder_text_color="#5D5D5D")
+    api_key_display.grid(row=1, column=1, sticky="w", pady=5)
+    signout_btn = ck.CTkButton(master=settings_tab,width=275, text="logout", fg_color="#B23B3B")
+    signout_btn.grid(row=2, column=1)
+    
     main_tab.grid_columnconfigure(0, weight=1)
     main_tab.grid_columnconfigure(1, weight=1)
-
     main_tab.grid_rowconfigure(0, weight=1)
     main_tab.grid_rowconfigure(1, weight=1)
     
