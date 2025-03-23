@@ -166,6 +166,20 @@ def validateKeyExists():
 
 # /////////// /////////// /////////// /////////// /////////// 
 # MAIN
+
+def logout(toplevel):
+    con = sqlite3.connect('key.db')
+    cursor = con.cursor()
+    
+    cursor.execute("UPDATE credentials SET is_active = 0")
+    con.commit()
+    con.close()
+    
+    toplevel.destroy()
+    
+    root.deiconify()
+    
+    
 def initialize_login_gui():
     # Images
     copy_img = ck.CTkImage(light_image=Image.open("img/copy.png"), size=(15, 20))
@@ -293,8 +307,8 @@ def initialize_toplevel_gui():
     
     table_exists = cursor.fetchone()
     
-    cursor.execute("SELECT api_key FROM credentials")
-    api_keys = cursor.fetchone()
+    cursor.execute("SELECT username, api_key, token FROM credentials WHERE is_active = 1")
+    username, api_key, token = cursor.fetchone()
     
     if not table_exists:
         print("Table does not exist!")
@@ -309,9 +323,10 @@ def initialize_toplevel_gui():
         
     api_user_label  = ck.CTkLabel(master=settings_tab,text="api key: ",font=("Arial", 14, "bold"))
     api_user_label.grid(row=1, column=0, sticky="e", pady=10)
-    api_key_display = ck.CTkEntry(master=settings_tab, placeholder_text="[api_key_here]", width=275, height=100, fg_color=FIELD_OFF, placeholder_text_color="white")
+    api_key_display = ck.CTkEntry(master=settings_tab, placeholder_text=f"{api_key}", width=355, height=20, placeholder_text_color="white", font=("Arial", 20))
+    api_key_display.configure(state="disabled", fg_color=FIELD_OFF)
     api_key_display.grid(row=1, column=1, sticky="w", pady=5)
-    signout_btn = ck.CTkButton(master=settings_tab,width=275, text="logout", fg_color="#B23B3B")
+    signout_btn = ck.CTkButton(master=settings_tab,width=275, text="logout", fg_color="#B23B3B", command=lambda: logout(toplevel))
     signout_btn.grid(row=2, column=1)
     
     main_tab.grid_columnconfigure(0, weight=1)
