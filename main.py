@@ -10,6 +10,8 @@ from tkinter import ttk
 
 from PIL import Image
 
+from clipboard import copy_to_clipboard, paste_to_clipboard, clear_clipboard
+
 # Clear console for development
 os.system("cls" if os.name == 'nt' else 'clear')
 
@@ -30,34 +32,6 @@ DEFAULT_BLUE = "#1F6AA5"
 SUCCESS_GREEN = "#39FF14"
 COPY_PASTA_YELLOW = "#FFFF85"
 AUTHENTICATING_YELLOW = "#FFFF00"
-
-# /////////// /////////// /////////// /////////// /////////// 
-# LOGIN FIELD FUNCTIONS
-# Copy
-def copy_to_clipboard(text, button):
-    try:
-        root.clipboard_clear()
-        root.clipboard_append(text)
-        button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
-        button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
-    except tk.TclError as e:
-        print(f"Clipboard copy error: {e}")
-        
-# Paste
-def paste_to_clipboard(entry_field, button):
-    try:
-        entry_field.delete(0, "end")
-        entry_field.insert(0, root.clipboard_get())
-        button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
-        button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))
-    except tk.TclError as e:
-        print(f"Clipboard paste error: ", e)
-        
-    
-def clear_clipboard(entry_field, button):
-    entry_field.delete(0, "end")
-    button.configure(state="disabled", fg_color=COPY_PASTA_YELLOW)
-    button.after(5000, lambda: button.configure(state="normal", fg_color=DEFAULT_BLUE))  
 
 # /////////// /////////// /////////// /////////// /////////// 
 # VERIFICATION FUNCTIONS
@@ -237,13 +211,13 @@ def initialize_login_gui():
     api_submit_btn = ck.CTkButton(master=connect_tab, text="Connect", width=275, command=submit_api)
     api_submit_btn.grid(row=5, column=1, sticky="w", pady=10)
 
-    paste_btn_apikey = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(api_key_input, paste_btn_apikey), image=paste_img)
+    paste_btn_apikey = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(root=root, entry_field=api_key_input, button=paste_btn_apikey), image=paste_img)
     paste_btn_apikey.grid(row=2, column=2, padx=5, sticky="w")
 
     clear_btn_apikey = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: clear_clipboard(api_key_input, clear_btn_apikey), image=clear_img)
     clear_btn_apikey.grid(row=2, column=3, padx=0, sticky="w")
 
-    paste_btn_token = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(api_token_input, paste_btn_token), image=paste_img)
+    paste_btn_token = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(root=root, entry_field=api_token_input, button=paste_btn_token), image=paste_img)
     paste_btn_token.grid(row=3, column=2, padx=5, sticky="w")
 
     clear_btn_token = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: clear_clipboard(api_token_input, clear_btn_token), image=clear_img)
@@ -271,9 +245,9 @@ def initialize_login_gui():
     developer_github.configure(state="disabled")
     developer_github.grid(row=3, column=1, padx=0, pady=5, sticky="w")
 
-    copy_btn_lnkin = ck.CTkButton(master=help_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: copy_to_clipboard("linkedin.com/in/dbdoan", copy_btn_lnkin), image=copy_img)
+    copy_btn_lnkin = ck.CTkButton(master=help_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: copy_to_clipboard(root=root, text="linkedin.com/in/dbdoan", button=copy_btn_lnkin), image=copy_img)
     copy_btn_lnkin.grid(row=2, column=2, padx=5, sticky="w")
-    copy_btn_gh = ck.CTkButton(master=help_tab, width=20, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: copy_to_clipboard("github.com/dbdoan", copy_btn_gh), image=copy_img)
+    copy_btn_gh = ck.CTkButton(master=help_tab, width=20, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: copy_to_clipboard(root=root, text="github.com/dbdoan", button=copy_btn_gh), image=copy_img)
     copy_btn_gh.grid(row=3, column=2, padx=5, sticky="w")
 
 def initialize_toplevel_gui():
@@ -307,10 +281,17 @@ def initialize_toplevel_gui():
     
     table_exists = cursor.fetchone()
     
-    cursor.execute("SELECT username, api_key, token FROM credentials WHERE is_active = 1")
-    username, api_key, token = cursor.fetchone()
-    
-    if not table_exists:
+    if table_exists:
+        cursor.execute("SELECT username, api_key, token FROM credentials WHERE is_active = 1")
+        result = cursor.fetchone()
+        
+        if result: 
+            username, api_key, token = result
+        else:
+            print("No active profile found!")
+            username, api_key, token = "No active profile", "No API key", "No token"
+        
+    else:
         print("Table does not exist!")
         toplevel_error = ck.CTkToplevel(toplevel)
         toplevel_error.title("Error!")
