@@ -77,7 +77,6 @@ def submit_api():
         con = sqlite3.connect("key.db")
         cursor = con.cursor()
         
-        cursor.execute("UPDATE credentials SET is_active = 0")
         cursor.execute("""
                        CREATE TABLE IF NOT EXISTS credentials(
                            id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -89,7 +88,13 @@ def submit_api():
                            """)
         con.commit()
         
-        cursor.execute(f"INSERT OR IGNORE INTO credentials (username, api_key, token, is_active) VALUES (?, ?, ?, 1)", (username, user_api_key, user_token))
+        cursor.execute("SELECT id FROM credentials WHERE api_key = ? AND token = ?", (user_api_key, user_token))
+        existing_profile = cursor.fetchone()
+        
+        if existing_profile:
+            cursor.execute("UPDATE credentials SET is_active = 1 WHERE id = ?", (existing_profile[0],))
+        else: 
+            cursor.execute(f"INSERT OR IGNORE INTO credentials (username, api_key, token, is_active) VALUES (?, ?, ?, 1)", (username, user_api_key, user_token))
         
         cursor.execute("SELECT username FROM credentials")
         api_keys = cursor.fetchall()
@@ -117,26 +122,19 @@ def validateKeyExists():
     # Check if table exists
     cursor.execute("SELECT name FROM sqlite_master where type='table' AND name='credentials'")
     table_exists = cursor.fetchone()
-    if not table_exists:
-        cursor.execute("""CREATE TABLE credentials (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT unique, 
-            api_key TEXT unique, 
-            token TEXT unique,
-            is_active BOOLEAN DEFAULT 0
-            )
-            """)
-        con.commit()
-        return False
     
     # Check if API exists in table
-    cursor.execute("SELECT 1 FROM credentials LIMIT 1")
-    result = cursor.fetchone()
-    con.close()
-    if result:
-        return True
+    if table_exists:
+        cursor.execute("SELECT * FROM credentials WHERE is_active = 1")
+        result = cursor.fetchone()
+        con.close()
+    
+        if result:
+            return True
+        else:
+            return False
     else:
-        return False
+        print("The database table does not exist!")
 
 # /////////// /////////// /////////// /////////// /////////// 
 # MAIN
@@ -148,11 +146,9 @@ def logout(toplevel):
     cursor.execute("UPDATE credentials SET is_active = 0")
     con.commit()
     con.close()
-    
-    toplevel.destroy()
-    
+    toplevel.withdraw()
+    initialize_login_gui()
     root.deiconify()
-    
     
 def initialize_login_gui():
     # Images
@@ -163,9 +159,9 @@ def initialize_login_gui():
     global root, tabview, help_holder
     global connect_status, api_key_input, api_token_input, api_submit_btn, username_input
     
-    root = tk.Tk()
     root.title("TkTrello")
     frm = ttk.Frame(root, padding=10)
+    root.geometry("600x300")
 
     root.grid_columnconfigure(0, weight=1)
     root.grid_rowconfigure(0, weight=1)
@@ -319,19 +315,21 @@ def initialize_toplevel_gui():
 
 # MAIN PROGRAM (TOP_LEVEL)
 def main_program():
+    print("Opening main program...")
     initialize_toplevel_gui()
-    
-# /////////// /////////// /////////// /////////// /////////// 
-# LOGIN START
-initialize_login_gui()
-
-if validateKeyExists():
-    root.withdraw()
-    main_program()
-else:
-    root.mainloop()
 
 # /////////// /////////// /////////// /////////// /////////// 
 # Root End
-root.geometry("600x300")
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+        
+    print("Checking if an active profile exists...")
+    if validateKeyExists():
+        print("Active profile found. Hiding login window...")
+        root.withdraw()
+        main_program()
+    else:
+        print("No active profile found. Showing login window...")
+        initialize_login_gui()
+        root.deiconify()
+    root.mainloop()
