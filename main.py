@@ -139,8 +139,39 @@ def validateKeyExists():
 # /////////// /////////// /////////// /////////// /////////// 
 # MAIN
 
-def profile_fill():
-    print("filled")
+def optionmenu_callback(username):
+    con = sqlite3.connect('key.db')
+    cursor = con.cursor()
+    cursor.execute("SELECT api_key, token FROM credentials WHERE username = ?", (username,))
+    
+    result = cursor.fetchone()
+    
+    con.close()
+    
+    if result:
+        api_key, token = result
+        api_key_input.delete(0, "end")
+        api_token_input.delete(0, "end")
+        username_input.delete(0, "end")
+        
+        api_key_input.insert(0, api_key)
+        api_token_input.insert(0, token)
+        username_input.insert(0, username)
+    
+    else:
+        print("Did not find profile key-pair in database!")
+        return None, None
+    
+def get_usersnames_from_db():
+    con = sqlite3.connect('key.db')
+    cursor = con.cursor()
+    
+    cursor.execute("SELECT username FROM credentials")
+    usernames = cursor.fetchall()
+    
+    con.close
+    
+    return [username[0] for username in usernames]
 
 def logout(toplevel):
     con = sqlite3.connect('key.db')
@@ -172,7 +203,7 @@ def initialize_login_gui():
     tabview = ck.CTkTabview(master=root, width=500, height=250)
     tabview.grid(row=0, column=0, padx=0, pady=0)
 
-    help_holder = "Help"
+    help_holder = "Contact"
     # Tabs
     connect_tab = tabview.add("Connect")
     help_tab = tabview.add(f"{help_holder}")
@@ -208,9 +239,14 @@ def initialize_login_gui():
     username_input.grid(row=4, column=1, sticky="w")
     
     profile_label = ck.CTkLabel(master=connect_tab, text="PROFILES: ", font=("Arial", 14, "bold"))
-    profile_options = ck.CTkOptionMenu(master=connect_tab, values=[], command=profile_fill, width=275)
+    
+    usernames = get_usersnames_from_db()
+    default_username = usernames[0] if usernames else "No Profiles"
+    selected_profile = ck.StringVar(value=default_username)
+    profile_options = ck.CTkOptionMenu(master=connect_tab, values=usernames, command=optionmenu_callback, variable=selected_profile, width=275)
+    profile_options.set(default_username)
     profile_label.grid(row=5, column=0, sticky="e")
-    profile_options.grid(row=5, column=1, sticky="w", pady=10)
+    profile_options.grid(row=5, column=1, sticky="w", pady=5)
 
     api_submit_btn = ck.CTkButton(master=connect_tab, text="Connect", width=275, command=submit_api)
     api_submit_btn.grid(row=6, column=1, sticky="w", pady=10)
@@ -261,13 +297,13 @@ def initialize_toplevel_gui():
 
     # Centering frame in respects to window
     toplevel.grid_columnconfigure(0, weight=1)
-    toplevel.grid_rowconfigure(0, weight=1)
+    # toplevel.grid_rowconfigure(0, weight=1)
     
     tabview_toplevel = ck.CTkTabview(master=toplevel, width=500, height=250)
     tabview_toplevel.grid(row=0, column=0, padx=0, pady=0)
     
     main_tab = tabview_toplevel.add("Main")
-    settings_tab = tabview_toplevel.add("Settings")
+    settings_tab = tabview_toplevel.add("Logout")
     
     # Settings Tab centering
     settings_tab.grid_columnconfigure(0, weight=1)
@@ -308,10 +344,11 @@ def initialize_toplevel_gui():
         
     api_user_label  = ck.CTkLabel(master=settings_tab,text="api key: ",font=("Arial", 14, "bold"))
     api_user_label.grid(row=1, column=0, sticky="e", pady=10)
-    api_key_display = ck.CTkEntry(master=settings_tab, placeholder_text=f"{api_key}", width=355, height=20, placeholder_text_color="white", font=("Arial", 20))
-    api_key_display.configure(state="disabled", fg_color=FIELD_OFF)
+    api_key_display = ck.CTkEntry(master=settings_tab, placeholder_text=f"{api_key}", width=355, height=20, placeholder_text_color='#ADADAD', font=("Arial", 20))
+    api_key_display.configure(state="disabled", height=40, fg_color=FIELD_OFF)
     api_key_display.grid(row=1, column=1, sticky="w", pady=5)
-    signout_btn = ck.CTkButton(master=settings_tab,width=275, text="logout", fg_color="#B23B3B", command=lambda: logout(toplevel))
+    
+    signout_btn = ck.CTkButton(master=settings_tab,width=355, text="LOGOUT", fg_color="#B23B3B", hover_color="#7A2020", command=lambda: logout(toplevel))
     signout_btn.grid(row=2, column=1)
     
     main_tab.grid_columnconfigure(0, weight=1)
@@ -319,7 +356,7 @@ def initialize_toplevel_gui():
     main_tab.grid_rowconfigure(0, weight=1)
     main_tab.grid_rowconfigure(1, weight=1)
     
-    toplevel.geometry("600x300")
+    toplevel.geometry("600x600")
 
 # MAIN PROGRAM (TOP_LEVEL)
 def main_program():
