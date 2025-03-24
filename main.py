@@ -139,6 +139,9 @@ def validateKeyExists():
 # /////////// /////////// /////////// /////////// /////////// 
 # MAIN
 
+def profile_fill():
+    print("filled")
+
 def logout(toplevel):
     con = sqlite3.connect('key.db')
     cursor = con.cursor()
@@ -203,9 +206,14 @@ def initialize_login_gui():
     username_input = ck.CTkEntry(master=connect_tab, placeholder_text="[enter name for entry]", width=275, fg_color=FIELD_ON, placeholder_text_color="#5D5D5D")
     username_label.grid(row=4, column=0, sticky="e")
     username_input.grid(row=4, column=1, sticky="w")
+    
+    profile_label = ck.CTkLabel(master=connect_tab, text="PROFILES: ", font=("Arial", 14, "bold"))
+    profile_options = ck.CTkOptionMenu(master=connect_tab, values=[], command=profile_fill, width=275)
+    profile_label.grid(row=5, column=0, sticky="e")
+    profile_options.grid(row=5, column=1, sticky="w", pady=10)
 
     api_submit_btn = ck.CTkButton(master=connect_tab, text="Connect", width=275, command=submit_api)
-    api_submit_btn.grid(row=5, column=1, sticky="w", pady=10)
+    api_submit_btn.grid(row=6, column=1, sticky="w", pady=10)
 
     paste_btn_apikey = ck.CTkButton(master=connect_tab, width=15, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: paste_to_clipboard(root=root, entry_field=api_key_input, button=paste_btn_apikey), image=paste_img)
     paste_btn_apikey.grid(row=2, column=2, padx=5, sticky="w")
