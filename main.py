@@ -11,6 +11,7 @@ from tkinter import ttk
 from PIL import Image
 
 from clipboard import copy_to_clipboard, paste_to_clipboard, clear_clipboard
+from nav_trl import get_all_boards
 
 # Clear console for development
 os.system("cls" if os.name == 'nt' else 'clear')
@@ -290,21 +291,6 @@ def initialize_login_gui():
     copy_btn_gh = ck.CTkButton(master=help_tab, width=20, text="", font=("Arial", 14), hover_color="#A5A5A5", text_color="#FFFFFF", command=lambda: copy_to_clipboard(root=root, text="github.com/dbdoan", button=copy_btn_gh), image=copy_img)
     copy_btn_gh.grid(row=3, column=2, padx=5, sticky="w")
 
-def get_active_key():
-    con = sqlite3.connect('key.db')
-    cursor = con.cursor()
-    
-    cursor.execute("SELECT api_key, token FROM credentials WHERE is_active = 1")
-    result = cursor.fetchone()
-    
-    if result:
-        api_key, token = result
-    else:
-        print("No active API key. (How are you even logged in??)")
-        api_key = "No API key"
-        token = "no token"
-    return result
-
 def initialize_toplevel_gui():
     global tabview_toplevel
     toplevel = ck.CTkToplevel(root)
@@ -314,7 +300,7 @@ def initialize_toplevel_gui():
     toplevel.grid_columnconfigure(0, weight=1)
     # toplevel.grid_rowconfigure(0, weight=1)
     
-    tabview_toplevel = ck.CTkTabview(master=toplevel, width=500, height=250)
+    tabview_toplevel = ck.CTkTabview(master=toplevel, width=500, height=550)
     tabview_toplevel.grid(row=0, column=0, padx=0, pady=0)
     
     main_tab = tabview_toplevel.add("Main")
@@ -369,31 +355,14 @@ def initialize_toplevel_gui():
     main_tab.grid_columnconfigure(0, weight=1)
     main_tab.grid_columnconfigure(1, weight=1)
     main_tab.grid_columnconfigure(2, weight=1)
-    main_tab.grid_rowconfigure(0, weight=1)
-    main_tab.grid_rowconfigure(1, weight=1)
-    
-    def get_all_boards():
-        active_key = get_active_key()
-        api_key = active_key[0]
-        token = active_key[1]
-        url = f"https://api.trello.com/1/members/me/boards?key={api_key}&token={token}"
-        
-        headers=  {
-            "Accept": "application/json"
-        }
-        
-        response = requests.get(url, headers=headers)
-    
-        print(json.dumps(json.loads(response.text), indent=4))
-        
+    # main_tab.grid_rowconfigure(0, weight=1)
+    # main_tab.grid_rowconfigure(1, weight=1)
     
     def optionmenu_callback(choice):
         print("optionmenu dropdown clicked:", choice)
-        # get_active_key()
         get_all_boards()
         
     board_selector = ck.CTkOptionMenu(master=main_tab, values=["option1", "option2"], command=optionmenu_callback, dynamic_resizing=False, width=300)
-    
     board_selector.grid(column=1, row=0)
     
     toplevel.geometry("600x600")
