@@ -28,5 +28,12 @@ def get_all_boards():
     }
     
     response = requests.get(url, headers=headers)
+    data = response.json()
 
-    print(json.dumps(json.loads(response.text), indent=4))
+    # print(json.dumps(json.loads(response.text), indent=4))
+    board_names = []
+    for board in data:
+        if not board.get('closed', False):
+            board_names.append(board['name'].title())
+            
+    return (board_names)

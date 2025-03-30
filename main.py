@@ -300,7 +300,7 @@ def initialize_toplevel_gui():
     toplevel.grid_columnconfigure(0, weight=1)
     # toplevel.grid_rowconfigure(0, weight=1)
     
-    tabview_toplevel = ck.CTkTabview(master=toplevel, width=500, height=550)
+    tabview_toplevel = ck.CTkTabview(master=toplevel, width=500, height=575)
     tabview_toplevel.grid(row=0, column=0, padx=0, pady=0)
     
     main_tab = tabview_toplevel.add("Main")
@@ -358,12 +358,13 @@ def initialize_toplevel_gui():
     # main_tab.grid_rowconfigure(0, weight=1)
     # main_tab.grid_rowconfigure(1, weight=1)
     
-    def optionmenu_callback(choice):
-        print("optionmenu dropdown clicked:", choice)
-        get_all_boards()
+    def test_profile_click(choice):
+        print("Option clicked:", choice)
         
-    board_selector = ck.CTkOptionMenu(master=main_tab, values=["option1", "option2"], command=optionmenu_callback, dynamic_resizing=False, width=300)
-    board_selector.grid(column=1, row=0)
+    boards = get_all_boards()
+    
+    board_selector = ck.CTkOptionMenu(master=main_tab, values=boards, command=test_profile_click, dynamic_resizing=False, width=300)
+    board_selector.grid(column=1, row=0, pady=5)
     
     toplevel.geometry("600x600")
 
