@@ -11,7 +11,7 @@ from tkinter import ttk
 from PIL import Image
 
 from clipboard import copy_to_clipboard, paste_to_clipboard, clear_clipboard
-from nav_trl import get_all_boards
+from nav_trl import get_all_boards, get_all_lists
 
 # Clear console for development
 os.system("cls" if os.name == 'nt' else 'clear')
@@ -361,10 +361,22 @@ def initialize_toplevel_gui():
     def test_profile_click(choice):
         print("Option clicked:", choice)
         
-    boards = get_all_boards()
+    def test_list_click(choice):
+        # print("Option clicked:", choice)
+        get_all_lists()
+        
+    boards = list(get_all_boards().keys())
     
+    board_selector_label = ck.CTkLabel(master=main_tab, text="Select Board:")
     board_selector = ck.CTkOptionMenu(master=main_tab, values=boards, command=test_profile_click, dynamic_resizing=False, width=300)
-    board_selector.grid(column=1, row=0, pady=5)
+    board_selector_label.grid(column=1, row=0)
+    board_selector.grid(column=1, row=1, pady=5)
+    
+    list_selector_label = ck.CTkLabel(master=main_tab, text="Select List:")
+    list_selector_label.grid(column=1, row=2)
+    list_selector = ck.CTkOptionMenu(master=main_tab, values=boards, command=test_list_click, dynamic_resizing=False, width=300)
+    list_selector.grid(column=1, row=3, pady=5)
+    
     
     toplevel.geometry("600x600")
 
