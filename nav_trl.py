@@ -40,27 +40,24 @@ def get_all_boards():
     return board_map
 
 
-# def get_all_lists():
-#     active_key = get_active_key()
-#     api_key = active_key[0]
-#     token = active_key[1]
-#     # url = f"https://api.trello.com/1/boards/{board_id}/lists?key={api_key}&token={token}"
-    
-#     url = f"https://api.trello.com/1/members/me/boards?key={api_key}&token={token}"
-    
-#     headers=  {
-#         "Accept": "application/json"
-#     }
-    
-#     response = requests.get(url, headers=headers)
-#     data = response.json()
-    
-#     board_name = "Cashback"
-#     for board in data:
-#         if board['name'] == board_name:
-#             print("It is in here.")
-#             print(board['name'])
-#             print(board['id'])
-#         else:
-#             print("It is not in here.")
+def get_all_lists(board_id):
+    active_key = get_active_key()
+    api_key = active_key[0]
+    token = active_key[1]
+    url = f"https://api.trello.com/1/boards/{board_id}/lists?key={api_key}&token={token}"
 
+    headers=  {
+        "Accept": "application/json"
+    }
+    
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    
+    list_names = []
+    for lst in data:
+        if not lst.get("closed", False):
+            list_names.append(lst["name"])
+    return list_names
+    
+    
+    

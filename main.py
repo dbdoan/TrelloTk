@@ -355,26 +355,39 @@ def initialize_toplevel_gui():
     main_tab.grid_columnconfigure(0, weight=1)
     main_tab.grid_columnconfigure(1, weight=1)
     main_tab.grid_columnconfigure(2, weight=1)
-    # main_tab.grid_rowconfigure(0, weight=1)
-    # main_tab.grid_rowconfigure(1, weight=1)
     
-    def test_profile_click(choice):
+    global list_selector
+    list_selector = None
+    
+    def set_selected_board(choice):
         print("Option clicked:", choice)
+        selected_board_id = board_map.get(choice)
         
-    def test_list_click(choice):
-        # print("Option clicked:", choice)
-        get_all_lists()
-        
-    boards = list(get_all_boards().keys())
-    
+        if selected_board_id:
+            lists = get_all_lists(selected_board_id)
+            
+            if list_selector:
+                list_selector.configure(values=lists)
+                list_selector.set("")
+
+    board_map = get_all_boards()
+    board_names = list(get_all_boards().keys())
+
     board_selector_label = ck.CTkLabel(master=main_tab, text="Select Board:")
-    board_selector = ck.CTkOptionMenu(master=main_tab, values=boards, command=test_profile_click, dynamic_resizing=False, width=300)
+    board_selector = ck.CTkOptionMenu(master=main_tab, values=board_names, command=set_selected_board, dynamic_resizing=False, width=300)
+    board_selector.set("-")
     board_selector_label.grid(column=1, row=0)
     board_selector.grid(column=1, row=1, pady=5)
     
+    # list_names = get_all_lists(board_selector.get())
+    
+    def set_selected_list(choice):
+        print("Option clicked:", choice)
+    
     list_selector_label = ck.CTkLabel(master=main_tab, text="Select List:")
     list_selector_label.grid(column=1, row=2)
-    list_selector = ck.CTkOptionMenu(master=main_tab, values=boards, command=test_list_click, dynamic_resizing=False, width=300)
+    list_selector = ck.CTkOptionMenu(master=main_tab, values=[], command=set_selected_list, dynamic_resizing=False, width=300)
+    list_selector.set("-")
     list_selector.grid(column=1, row=3, pady=5)
     
     
