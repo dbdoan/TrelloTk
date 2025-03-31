@@ -377,9 +377,7 @@ def initialize_toplevel_gui():
     board_selector = ck.CTkOptionMenu(master=main_tab, values=board_names, command=set_selected_board, dynamic_resizing=False, width=300)
     board_selector.set("-")
     board_selector_label.grid(column=1, row=0)
-    board_selector.grid(column=1, row=1, pady=5)
-    
-    # list_names = get_all_lists(board_selector.get())
+    board_selector.grid(column=1, row=1, pady=5) 
     
     def set_selected_list(choice):
         print("Option clicked:", choice)
@@ -389,7 +387,6 @@ def initialize_toplevel_gui():
     list_selector = ck.CTkOptionMenu(master=main_tab, values=[], command=set_selected_list, dynamic_resizing=False, width=300)
     list_selector.set("-")
     list_selector.grid(column=1, row=3, pady=5)
-    
     
     toplevel.geometry("600x600")
 
