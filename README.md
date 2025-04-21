@@ -9,14 +9,13 @@ A custom Trello manager built using Python’s TKinter library, designed to stre
 - [x] Implement Connect and Help tabs
 - [x] Add copy btns to socials
 - [x] Implement API authentication
-- [x] Submit btn functionality
-- [x] Create database schema
+- [x] Successful API Authentication post-procedure [hide main level, pop top-level]
+- [x] Fix Login/Logout functionality
 
 ## 🚧 In Progress
-- [x] Successful API Authentication post-procedure [hide main level, pop top-level]
-- [ ] Main Program Structure [Lay out]
-- [x] Fix Login/Logout functionality
+- [ ] Structuring card info-display
 
 
 ## ⏳ Planned
-- [ ] Trello implementation
+- [ ] Main Program Structure [Lay out]
+

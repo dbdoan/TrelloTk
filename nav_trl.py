@@ -31,7 +31,7 @@ def get_all_boards():
     data = response.json()
 
     # print(json.dumps(json.loads(response.text), indent=4))
-    board_map ={}
+    board_map = {}
     for board in data:
         if not board.get('closed', False):
             board_map[board['name'].title()] = board['id']
@@ -53,11 +53,26 @@ def get_all_lists(board_id):
     response = requests.get(url, headers=headers)
     data = response.json()
     
-    list_names = []
+    list_map = {}
     for lst in data:
         if not lst.get("closed", False):
-            list_names.append(lst["name"])
-    return list_names
+            list_map[lst['name'].upper()] = lst["id"]
+    return list_map
     
+def get_all_cards(list_id):
+    active_key = get_active_key()
+    api_key = active_key[0]
+    token = active_key[1]
+    url = f"https://api.trello.com/1/lists/{list_id}/cards?key={api_key}&token={token}"
     
+    headers = {
+        "Accept": "application/json"
+    }
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
     
+    card_names = {}
+    for card in data:
+        card_names[card["name"]] = card["id"]
+    return card_names

@@ -1,4 +1,3 @@
-# IMPORTS
 import os
 import customtkinter as ck
 import json
@@ -11,7 +10,7 @@ from tkinter import ttk
 from PIL import Image
 
 from clipboard import copy_to_clipboard, paste_to_clipboard, clear_clipboard
-from nav_trl import get_all_boards, get_all_lists
+from nav_trl import get_all_boards, get_all_lists, get_all_cards
 
 # Clear console for development
 os.system("cls" if os.name == 'nt' else 'clear')
@@ -342,51 +341,77 @@ def initialize_toplevel_gui():
         error_text = ck.CTkLabel(master=toplevel_error, text="table is missing!", font=("Arial", 40, "bold"), text_color="red")
         error_text.grid(row=0, column=0)
         toplevel_error.geometry("400x200")
-        
-    api_user_label  = ck.CTkLabel(master=settings_tab,text="api key: ",font=("Arial", 14, "bold"))
-    api_user_label.grid(row=1, column=0, sticky="e", pady=10)
+    
+    profile_name_label = ck.CTkLabel(master=settings_tab, text="profile: ", font=("Arial", 14, "bold"))
+    profile_name_label.grid(row=1, column=0, sticky="e", pady=10)
+    profile_name_display = ck.CTkEntry(master=settings_tab, placeholder_text=f"{username}", width=355, height=20, placeholder_text_color="#ADADAD", font=("Arial", 20))
+    profile_name_display.configure(state="disabled", height=40, fg_color=FIELD_OFF)
+    profile_name_display.grid(row=1, column=1, sticky="w", pady=5)
+    
+    api_user_label = ck.CTkLabel(master=settings_tab, text="api key: ", font=("Arial", 14, "bold"))
+    api_user_label.grid(row=2, column=0, sticky="e", pady=10)
     api_key_display = ck.CTkEntry(master=settings_tab, placeholder_text=f"{api_key}", width=355, height=20, placeholder_text_color='#ADADAD', font=("Arial", 20))
     api_key_display.configure(state="disabled", height=40, fg_color=FIELD_OFF)
-    api_key_display.grid(row=1, column=1, sticky="w", pady=5)
-    
+    api_key_display.grid(row=2, column=1, sticky="w", pady=5)
+
     signout_btn = ck.CTkButton(master=settings_tab,width=355, text="LOGOUT", fg_color="#B23B3B", hover_color="#7A2020", command=lambda: logout(toplevel))
-    signout_btn.grid(row=2, column=1)
+    signout_btn.grid(row=3, column=1, sticky="n", pady=5)
     
     main_tab.grid_columnconfigure(0, weight=1)
     main_tab.grid_columnconfigure(1, weight=1)
     main_tab.grid_columnconfigure(2, weight=1)
     
-    global list_selector
-    list_selector = None
+    global list_selector_box
+    list_selector_box = None
+    
+    board_map = get_all_boards()
+    board_names = list(board_map.keys())
     
     def set_selected_board(choice):
         print("Option clicked:", choice)
         selected_board_id = board_map.get(choice)
         
         if selected_board_id:
-            lists = get_all_lists(selected_board_id)
+            list_map = get_all_lists(selected_board_id)
+            list_names = list(list_map.keys())
+            list_selector_label.grid(column=1, row=2)
+            list_selector_box.grid(column=1, row=3, pady=5)
             
-            if list_selector:
-                list_selector.configure(values=lists)
-                list_selector.set("")
-
-    board_map = get_all_boards()
-    board_names = list(get_all_boards().keys())
+            if list_selector_box:
+                list_selector_box.configure(values=list_names)
+                list_selector_box.set("")
 
     board_selector_label = ck.CTkLabel(master=main_tab, text="Select Board:")
-    board_selector = ck.CTkOptionMenu(master=main_tab, values=board_names, command=set_selected_board, dynamic_resizing=False, width=300)
-    board_selector.set("-")
+    board_selector_box = ck.CTkOptionMenu(master=main_tab, values=board_names, command=set_selected_board, dynamic_resizing=False, width=300)
+    board_selector_box.set("-")
     board_selector_label.grid(column=1, row=0)
-    board_selector.grid(column=1, row=1, pady=5) 
+    board_selector_box.grid(column=1, row=1, pady=5) 
     
     def set_selected_list(choice):
         print("Option clicked:", choice)
-    
+        selected_board_id = board_map.get(board_selector_box.get())
+        list_map = get_all_lists(selected_board_id)
+        selected_list_id = list_map.get(choice)     
+        
+        if selected_list_id:
+            card_map = get_all_cards(selected_list_id)
+            card_names = list(card_map.keys())
+            
+            card_selector_label.grid(column=1, row=4)
+            card_selector_box.grid(column=1, row=5)
+            card_selector_box.configure(values=card_names)
+
     list_selector_label = ck.CTkLabel(master=main_tab, text="Select List:")
-    list_selector_label.grid(column=1, row=2)
-    list_selector = ck.CTkOptionMenu(master=main_tab, values=[], command=set_selected_list, dynamic_resizing=False, width=300)
-    list_selector.set("-")
-    list_selector.grid(column=1, row=3, pady=5)
+    list_selector_box = ck.CTkOptionMenu(master=main_tab, values=[], command=set_selected_list, dynamic_resizing=False, width=300)
+    list_selector_box.set("-")
+
+    def set_selected_card(choice):
+        print("Option clicked:", choice)
+    
+    card_selector_label = ck.CTkLabel(master=main_tab, text="Select Card:")
+
+    card_selector_box = ck.CTkOptionMenu(master=main_tab, values=[], command=set_selected_card, dynamic_resizing=False, width=300)
+    card_selector_box.set("-")
     
     toplevel.geometry("600x600")
 
